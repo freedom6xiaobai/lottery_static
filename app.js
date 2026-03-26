@@ -3,11 +3,20 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
+const cors = require('cors')
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
+var authRouter = require('./routes/auth');
+var userRouter = require('./routes/user');
+var roleRouter = require('./routes/role');
+var menuRouter = require('./routes/menu');
 
 var app = express();
+app.use(cors({
+  origin: 'http://localhost:1024', // 允许前端地址
+  credentials: true
+}))
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -19,6 +28,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// API 路由
+app.use('/api/auth', authRouter);
+app.use('/api/users', userRouter);
+app.use('/api/roles', roleRouter);
+app.use('/api/menus', menuRouter);
+
+// 原有路由
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
@@ -37,5 +53,12 @@ app.use(function(err, req, res, next) {
   res.status(err.status || 500);
   res.render('error');
 });
+
+
+
+// app.options('*', cors({
+//   origin: 'http://localhost:1024',
+//   credentials: true
+// }))
 
 module.exports = app;

@@ -1,0 +1,105 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// User 模型
+model User {
+  id        Int     @id @default(autoincrement())
+  username  String  @unique
+  password  String
+  email     String?
+  status    String  @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系：用户与角色的多对多关系
+  userRoles UserRole[]
+}
+
+// Role 模型
+model Role {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系
+  userRoles   UserRole[]
+  rolePermissions RolePermission[]
+  roleMenus   RoleMenu[]
+}
+
+// Permission 模型
+model Permission {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系：权限与角色的多对多关系
+  rolePermissions RolePermission[]
+}
+
+// Menu 模型
+model Menu {
+  id          Int     @id @default(autoincrement())
+  name        String
+  path        String?
+  icon        String?
+  component   String?
+  parentId    Int?
+  order       Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系：自我关联（父子菜单）
+  parent      Menu?  @relation("MenuChildren", fields: [parentId], references: [id], onDelete: SetNull)
+  children    Menu[] @relation("MenuChildren")
+  roleMenus   RoleMenu[]
+}
+
+// 关联表：User 和 Role
+model UserRole {
+  id     Int @id @default(autoincrement())
+  userId Int
+  roleId Int
+
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+// 关联表：Role 和 Permission
+model RolePermission {
+  id           Int @id @default(autoincrement())
+  roleId       Int
+  permissionId Int
+
+  role        Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission  Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+}
+
+// 关联表：Role 和 Menu
+model RoleMenu {
+  id     Int @id @default(autoincrement())
+  roleId Int
+  menuId Int
+
+  role   Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  menu   Menu @relation(fields: [menuId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, menuId])
+}
