@@ -14,7 +14,7 @@ var menuRouter = require('./routes/menu');
 
 var app = express();
 app.use(cors({
-  origin: 'http://localhost:1024', // 允许前端地址
+  origin: 'http://localhost:3001', // 允许前端地址
   credentials: true
 }))
 
@@ -55,10 +55,5 @@ app.use(function(err, req, res, next) {
 });
 
 
-
-// app.options('*', cors({
-//   origin: 'http://localhost:1024',
-//   credentials: true
-// }))
 
 module.exports = app;
